@@ -184,9 +184,16 @@ function check() {
 }
 
 async function init() {
-  const data = await chrome.runtime.sendMessage({ type: 'get_rules' }).catch(() => ({ rules: [], builtinsEnabled: true }));
-  _rules = data.rules || [];
-  _builtinsEnabled = data.builtinsEnabled !== false;
+  let data;
+  try {
+    data = await chrome.runtime.sendMessage({ type: 'get_rules' });
+  } catch {
+    // SW may still be waking up — retry once after a short delay
+    await new Promise(r => setTimeout(r, 150));
+    try { data = await chrome.runtime.sendMessage({ type: 'get_rules' }); } catch { /* use defaults */ }
+  }
+  _rules = data?.rules || [];
+  _builtinsEnabled = data?.builtinsEnabled !== false;
   check();
 }
 
@@ -201,9 +208,13 @@ window.addEventListener('popstate', check);
 
 // ── Messages from popup ────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
-  if (msg.type === 'rules_updated') { init(); return; }
-  if (msg.type === 'get_detection') {
-    const result = detectEnv(location.href, _rules, _builtinsEnabled);
-    reply(result);
+  if (msg.type === 'rules_updated') {
+    init();
+    return false; // fire-and-forget, no reply
   }
+  if (msg.type === 'get_detection') {
+    reply(detectEnv(location.href, _rules, _builtinsEnabled) || null);
+    return false; // reply is synchronous, channel can close
+  }
+  return false;
 });

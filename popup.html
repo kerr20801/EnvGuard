@@ -229,7 +229,7 @@ function renderRules() {
 }
 
 function saveRules() {
-  chrome.runtime.sendMessage({ type: 'set_rules', rules: _rules });
+  chrome.runtime.sendMessage({ type: 'set_rules', rules: _rules }, () => void chrome.runtime.lastError);
 }
 
 function addRule() {
@@ -258,7 +258,7 @@ function quickAdd(env) {
 }
 
 document.getElementById('builtin-chk').onchange = (e) => {
-  chrome.runtime.sendMessage({ type: 'set_builtins', enabled: e.target.checked });
+  chrome.runtime.sendMessage({ type: 'set_builtins', enabled: e.target.checked }, () => void chrome.runtime.lastError);
 };
 
 // ── Init ─────────────────────────────────────────────────────
@@ -270,7 +270,7 @@ async function init() {
   }
 
   // Load rules from background
-  const data = await chrome.runtime.sendMessage({ type: 'get_rules' });
+  const data = await chrome.runtime.sendMessage({ type: 'get_rules' }).catch(() => ({ rules: [], builtinsEnabled: true }));
   _rules = data.rules || [];
   document.getElementById('builtin-chk').checked = data.builtinsEnabled !== false;
 
