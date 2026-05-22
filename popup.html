@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:320px;min-height:300px;background:#0f1117;color:#e0e0e0;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang TC',sans-serif;font-size:13px}
+
+.header{padding:12px 15px 10px;border-bottom:1px solid #1f2937;display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;border-radius:7px;background:#141826;border:1.5px solid #2a2d3e;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.header-text h1{font-size:13px;font-weight:700;color:#f9fafb}
+.header-text p{font-size:10px;color:#6b7280;margin-top:1px}
+.lang-btn{margin-left:auto;background:#1a1d2e;border:1px solid #2a2d3e;color:#6b7280;
+  padding:2px 9px;border-radius:10px;cursor:pointer;font-size:10px;font-weight:700;flex-shrink:0}
+.lang-btn:hover{border-color:#7dd3fc;color:#7dd3fc}
+
+/* Current page status */
+.status-box{margin:12px 14px 0;border-radius:8px;padding:10px 12px;border:1.5px solid #1f2937;background:#1a1d2e}
+.status-env{display:flex;align-items:center;gap:8px}
+.env-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.env-label{font-size:13px;font-weight:700}
+.env-source{font-size:10px;color:#6b7280;margin-top:3px}
+.status-none{color:#4b5563;font-size:12px}
+
+/* Env selector */
+.env-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.env-chip{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid transparent;transition:all .12s;background:#1f2937;color:#94a3b8}
+.env-chip:hover{filter:brightness(1.25)}
+.env-chip.prod{border-color:#991b1b;color:#fca5a5}
+.env-chip.staging{border-color:#92400e;color:#fcd34d}
+.env-chip.uat{border-color:#9a3412;color:#fdba74}
+.env-chip.dev{border-color:#166534;color:#86efac}
+.env-chip.active{background:#1f2937}
+
+/* Add rule */
+.section{padding:10px 14px;border-top:1px solid #1f2937}
+.sec-title{font-size:10px;color:#4b5563;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.add-row{display:flex;gap:5px;align-items:center}
+.add-row input{flex:1;background:#0f1117;border:1px solid #334155;color:#e0e0e0;
+  padding:5px 8px;border-radius:5px;font-size:11px;outline:none}
+.add-row input:focus{border-color:#7dd3fc}
+.add-row select{background:#0f1117;border:1px solid #334155;color:#e0e0e0;
+  padding:5px 4px;border-radius:5px;font-size:11px;outline:none;cursor:pointer}
+.add-btn{background:#1e3a5f;color:#7dd3fc;border:none;padding:5px 10px;
+  border-radius:5px;cursor:pointer;font-size:11px;white-space:nowrap;font-weight:700}
+.add-btn:hover{background:#2a5080}
+
+/* Rules list */
+.rules-list{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto}
+.rule-item{display:flex;align-items:center;gap:6px;background:#1a1d2e;border:1px solid #1f2937;
+  border-radius:5px;padding:5px 8px;font-size:11px}
+.rule-pattern{flex:1;font-family:monospace;color:#93c5fd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rule-env{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;flex-shrink:0}
+.rule-env.prod{background:#3f0a0a;color:#fca5a5}
+.rule-env.staging{background:#3b1f00;color:#fcd34d}
+.rule-env.uat{background:#3b1500;color:#fdba74}
+.rule-env.dev{background:#0a2f0f;color:#86efac}
+.rule-del{background:none;border:none;color:#4b5563;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0}
+.rule-del:hover{color:#ef4444}
+.empty{font-size:11px;color:#374151;padding:4px 0}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;
+  border-top:1px solid #1f2937}
+.toggle-row span{font-size:11px;color:#94a3b8}
+.toggle{position:relative;width:32px;height:18px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#1f2937;border-radius:18px;cursor:pointer;transition:.2s}
+.slider:before{content:'';position:absolute;width:12px;height:12px;left:3px;top:3px;
+  background:#6b7280;border-radius:50%;transition:.2s}
+input:checked+.slider{background:#7dd3fc}
+input:checked+.slider:before{transform:translateX(14px);background:#fff}
+
+.footer{padding:6px 14px 10px;font-size:10px;color:#374151;text-align:center;border-top:1px solid #1f2937}
+.footer a{color:#6b7280;text-decoration:none}.footer a:hover{color:#9ca3af}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🛡</div>
+  <div class="header-text">
+    <h1>EnvGuard</h1>
+    <p id="h-sub">本機偵測 · 資料不外傳 · by Kerr</p>
+  </div>
+  <button class="lang-btn" id="lang-btn" onclick="toggleLang()">EN</button>
+</div>
+
+<!-- Current page -->
+<div class="status-box">
+  <div id="status-content">
+    <div class="status-none" id="status-none">偵測中...</div>
+  </div>
+  <div class="env-row" id="quick-add-row" style="display:none">
+    <span style="font-size:10px;color:#6b7280;align-self:center" id="mark-as-lbl">標記此站為：</span>
+    <button class="env-chip prod"    onclick="quickAdd('prod')"   >PROD</button>
+    <button class="env-chip staging" onclick="quickAdd('staging')">STG</button>
+    <button class="env-chip uat"     onclick="quickAdd('uat')"    >UAT</button>
+    <button class="env-chip dev"     onclick="quickAdd('dev')"    >DEV</button>
+  </div>
+</div>
+
+<!-- User rules -->
+<div class="section">
+  <div class="sec-title" id="sec-rules">自訂規則</div>
+  <div class="add-row" style="margin-bottom:8px">
+    <input type="text" id="new-pattern" placeholder="e.g. prod.company.com or *.prod.io">
+    <select id="new-env">
+      <option value="prod">PROD</option>
+      <option value="staging">STG</option>
+      <option value="uat">UAT</option>
+      <option value="dev">DEV</option>
+    </select>
+    <button class="add-btn" id="add-btn" onclick="addRule()">+ 加入</button>
+  </div>
+  <div class="rules-list" id="rules-list">
+    <div class="empty" id="rules-empty">尚無自訂規則</div>
+  </div>
+</div>
+
+<!-- Built-in toggle -->
+<div class="toggle-row">
+  <span id="builtin-lbl">啟用內建規則（AWS/Vercel/Netlify 等）</span>
+  <label class="toggle">
+    <input type="checkbox" id="builtin-chk" checked>
+    <span class="slider"></span>
+  </label>
+</div>
+
+<div class="footer">
+  Built by <a href="https://github.com/kerr20801" target="_blank">Kerr</a>
+  &nbsp;·&nbsp; <a href="https://github.com/kerr20801" target="_blank">github.com/kerr20801</a>
+</div>
+
+<script>
+const I = {
+  zh: {
+    sub:'本機偵測 · 資料不外傳 · by Kerr', lang:'EN',
+    detecting:'偵測中...', no_env:'未偵測到環境標記',
+    source_user:'來源：自訂規則', source_heuristic:'來源：自動啟發式',
+    source_builtin:'來源：內建規則', mark_as:'標記此站為：',
+    sec_rules:'自訂規則', add:'+ 加入',
+    ph:'e.g. prod.company.com 或 *.prod.io',
+    empty:'尚無自訂規則',
+    builtin:'啟用內建規則（AWS/Vercel/Netlify 等）',
+  },
+  en: {
+    sub:'Local detection · No data sent · by Kerr', lang:'中文',
+    detecting:'Detecting...', no_env:'No environment detected',
+    source_user:'Source: custom rule', source_heuristic:'Source: auto heuristic',
+    source_builtin:'Source: built-in rule', mark_as:'Mark this site as:',
+    sec_rules:'Custom Rules', add:'+ Add',
+    ph:'e.g. prod.company.com or *.prod.io',
+    empty:'No custom rules yet',
+    builtin:'Enable built-in rules (AWS/Vercel/Netlify…)',
+  }
+};
+
+const ENV_CFG = {
+  prod:    { label:'PRODUCTION', bg:'#3f0a0a', color:'#fca5a5', dot:'#ef4444' },
+  staging: { label:'STAGING',    bg:'#3b1f00', color:'#fcd34d', dot:'#f59e0b' },
+  uat:     { label:'UAT',        bg:'#3b1500', color:'#fdba74', dot:'#f97316' },
+  dev:     { label:'DEV',        bg:'#0a2f0f', color:'#86efac', dot:'#22c55e' },
+};
+
+let _lang = localStorage.getItem('eg-lang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
+let _rules = [];
+let _currentHost = '';
+let _currentEnv = null;
+
+function applyLang() {
+  const t = I[_lang];
+  document.getElementById('h-sub').textContent = t.sub;
+  document.getElementById('lang-btn').textContent = t.lang;
+  document.getElementById('mark-as-lbl').textContent = t.mark_as;
+  document.getElementById('sec-rules').textContent = t.sec_rules;
+  document.getElementById('add-btn').textContent = t.add;
+  document.getElementById('new-pattern').placeholder = t.ph;
+  document.getElementById('builtin-lbl').textContent = t.builtin;
+  if (document.getElementById('rules-empty'))
+    document.getElementById('rules-empty').textContent = t.empty;
+  refreshStatus();
+}
+
+function toggleLang() {
+  _lang = _lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('eg-lang', _lang);
+  applyLang();
+}
+
+function refreshStatus() {
+  const t = I[_lang];
+  const box = document.getElementById('status-content');
+  if (!_currentEnv) {
+    box.innerHTML = `<div class="status-none">${_currentHost ? t.no_env : t.detecting}</div>`;
+    document.getElementById('quick-add-row').style.display = _currentHost ? 'flex' : 'none';
+    return;
+  }
+  const cfg = ENV_CFG[_currentEnv.env] || { label: _currentEnv.env, bg:'#1f2937', color:'#e0e0e0', dot:'#6b7280' };
+  const srcMap = { user: t.source_user, heuristic: t.source_heuristic, builtin: t.source_builtin };
+  box.innerHTML = `
+    <div class="status-env">
+      <div class="env-dot" style="background:${cfg.dot};box-shadow:0 0 5px ${cfg.dot}"></div>
+      <span class="env-label" style="color:${cfg.color}">${_currentEnv.label || cfg.label}</span>
+      ${_currentEnv.note ? `<span style="font-size:10px;color:#6b7280">${_currentEnv.note}</span>` : ''}
+    </div>
+    <div class="env-source">${srcMap[_currentEnv.source] || ''} · ${_currentHost}</div>
+  `;
+  document.getElementById('quick-add-row').style.display = 'none';
+}
+
+function renderRules() {
+  const list = document.getElementById('rules-list');
+  const t = I[_lang];
+  if (!_rules.length) {
+    list.innerHTML = `<div class="empty" id="rules-empty">${t.empty}</div>`;
+    return;
+  }
+  list.innerHTML = _rules.map((r, i) => `
+    <div class="rule-item">
+      <span class="rule-pattern">${r.pattern}</span>
+      <span class="rule-env ${r.env}">${r.env.toUpperCase()}</span>
+      <button class="rule-del" onclick="deleteRule(${i})" title="Remove">✕</button>
+    </div>
+  `).join('');
+}
+
+function saveRules() {
+  chrome.runtime.sendMessage({ type: 'set_rules', rules: _rules });
+}
+
+function addRule() {
+  const p = document.getElementById('new-pattern').value.trim();
+  const e = document.getElementById('new-env').value;
+  if (!p) return;
+  _rules = [{ pattern: p, env: e }, ..._rules];
+  document.getElementById('new-pattern').value = '';
+  renderRules();
+  saveRules();
+}
+
+function deleteRule(i) {
+  _rules.splice(i, 1);
+  renderRules();
+  saveRules();
+}
+
+function quickAdd(env) {
+  if (!_currentHost) return;
+  _rules = [{ pattern: _currentHost, env }, ..._rules];
+  renderRules();
+  saveRules();
+  _currentEnv = { env, label: ENV_CFG[env]?.label || env, source: 'user' };
+  refreshStatus();
+}
+
+document.getElementById('builtin-chk').onchange = (e) => {
+  chrome.runtime.sendMessage({ type: 'set_builtins', enabled: e.target.checked });
+};
+
+// ── Init ─────────────────────────────────────────────────────
+async function init() {
+  // Get current tab
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.url) {
+    try { _currentHost = new URL(tab.url).hostname; } catch {}
+  }
+
+  // Load rules from background
+  const data = await chrome.runtime.sendMessage({ type: 'get_rules' });
+  _rules = data.rules || [];
+  document.getElementById('builtin-chk').checked = data.builtinsEnabled !== false;
+
+  // Ask content script for current detection
+  if (tab?.id) {
+    chrome.tabs.sendMessage(tab.id, { type: 'get_detection' }, (res) => {
+      if (chrome.runtime.lastError) { /* content script not ready */ }
+      if (res) _currentEnv = res;
+      applyLang();
+      renderRules();
+    });
+  } else {
+    applyLang();
+    renderRules();
+  }
+}
+
+// Support get_detection from content script
+// (content.js also needs to handle this message — handled via storage approach)
+// Fallback: just show rules management
+init().catch(() => { applyLang(); renderRules(); });
+
+document.getElementById('new-pattern').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addRule();
+});
+</script>
+</body>
+</html>
