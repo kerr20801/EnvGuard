@@ -13,23 +13,24 @@ You have 8 tabs open. Three look identical. One is production.
 
 You run the reset. Wrong tab.
 
-EnvGuard puts a color bar at the top of every page and prefixes the tab title — so you always know where you are before you act.
+EnvGuard puts a color bar at the top of every page — so you always know where you are before you act.
 
 ---
 
-## What It Does
+## What It Does (v0.1.0)
 
-- **4px color bar** fixed at top of page
-- **Floating pill** (top-right) showing the environment name — dismiss per session
-- **Tab title prefix**: `[PROD] Dashboard`, `[STG] Admin Panel`
-- **Extension badge**: `PRD` / `STG` / `UAT` / `DEV` on the icon
+- **5px color bar** fixed at top of page via Shadow DOM — click to dismiss per session
+- **Extension badge** — `P` / `S` / `D` on the icon
+- **Popup** — shows detected environment, detection source, mark/ignore domain
 
-| Environment | Color | 
+| Environment | Color |
 |-------------|-------|
-| 🔴 PRODUCTION | Red `#ef4444` |
-| 🟡 STAGING | Amber `#f59e0b` |
-| 🟠 UAT | Orange `#f97316` |
-| 🟢 DEV | Green `#22c55e` |
+| 🔴 PROD | Red `#dc2626` |
+| 🟠 STAGING | Orange `#f97316` |
+| 🔵 DEV | Blue `#3b82f6` |
+| ⬜ Unknown | Grey `#6b7280` (toggleable) |
+
+**Coming in v0.2:** tab title prefix `[PROD]`, wildcard custom rules, built-in cloud console rules.
 
 ---
 
@@ -42,19 +43,8 @@ Add your own patterns in the popup: `prod.company.com`, `*.prod.io`, `api.intern
 - `localhost` / `127.0.0.1` / `*.local` → DEV  
 - `staging.*` / `stg.*` / `*.staging` / `uat.*` → STAGING
 
-**3. Built-in rules** (toggle on/off)  
-Pre-configured for common services:
-
-| Service | Environment |
-|---------|-------------|
-| console.aws.amazon.com | PROD |
-| console.cloud.google.com | PROD |
-| portal.azure.com | PROD |
-| app.datadoghq.com | PROD |
-| *.vercel.app | STAGING |
-| *.netlify.app | STAGING |
-| *.ngrok.io / *.ngrok-free.app | STAGING |
-| *.fly.dev / *.render.com | STAGING |
+**3. Path keywords** (fallback)  
+`/staging/`, `/uat/`, `/preprod/`, `/pre-prod/` in the URL path → STAGING
 
 ---
 
@@ -72,13 +62,13 @@ Pre-configured for common services:
 ## Usage
 
 **Popup:**
-- See current page's detected environment
-- Add custom rules (`prod.company.com` → PROD)
-- Toggle built-in rules on/off
-- Bilingual: 繁中 / EN
+- See detected environment + source (auto-detected / custom rule)
+- Mark current domain as PROD / STAGING / DEV (or clear)
+- Ignore (whitelist) current domain
+- Toggle: show grey bar on unrecognized sites
 
-**Pill dismiss:**  
-Click ✕ on the pill to hide it for the current session. Reappears on next visit.
+**Bar dismiss:**  
+Click the color bar to hide it for the current session.
 
 ---
 
