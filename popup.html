@@ -15,6 +15,10 @@ body{width:320px;min-height:340px;background:#0f1117;color:#e0e0e0;
   border:1.5px solid #2a2d3e;position:relative;overflow:hidden}
 .logo::after{content:'';position:absolute;width:9px;height:9px;
   border-radius:50%;bottom:4px;right:4px;background:#dc2626}
+.lang-btn{background:#1a1d2e;border:1px solid #2a2d3e;color:#6b7280;
+  padding:3px 10px;border-radius:12px;cursor:pointer;font-size:11px;
+  font-weight:700;font-family:inherit;flex-shrink:0;transition:all .15s}
+.lang-btn:hover{border-color:#3b82f6;color:#3b82f6}
 .header-text{flex:1}
 .header-text h1{font-size:14px;font-weight:700;color:#f9fafb}
 .header-text p{font-size:10px;color:#6b7280;margin-top:1px}
@@ -79,8 +83,9 @@ input:checked+.slider:before{transform:translateX(16px);background:#fff}
   <div class="logo">K</div>
   <div class="header-text">
     <h1>EnvGuard</h1>
-    <p>環境偵測 · 色條提示 · by Kerr</p>
+    <p id="h-sub">環境偵測 · 色條提示 · by Kerr</p>
   </div>
+  <button class="lang-btn" id="lang-btn">EN</button>
 </div>
 
 <div class="env-card" id="env-card">
@@ -93,20 +98,20 @@ input:checked+.slider:before{transform:translateX(16px);background:#fff}
 <div class="env-host" id="host"></div>
 
 <div class="section">
-  <div class="sec-title">標記此網域為</div>
+  <div class="sec-title" id="lbl-mark">標記此網域為</div>
   <div class="btn-row">
     <button class="btn prod"    data-env="PROD">PROD</button>
     <button class="btn staging" data-env="STAGING">STAGING</button>
     <button class="btn dev"     data-env="DEV">DEV</button>
-    <button class="btn clr"     data-env="clear">清除</button>
+    <button class="btn clr"     data-env="clear" id="btn-clear-rule">清除</button>
   </div>
 </div>
 
 <div class="section">
   <div class="toggle-row">
     <div>
-      <span>❓ 未知環境顯示灰條</span>
-      <small>關閉後未識別網站不顯示色條</small>
+      <span id="lbl-unknown">❓ 未知環境顯示灰條</span>
+      <small id="lbl-unknown-sub">關閉後未識別網站不顯示色條</small>
     </div>
     <label class="toggle">
       <input type="checkbox" id="toggle-unknown">
